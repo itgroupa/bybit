@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 
 @dataclass
 class DirtData:
@@ -126,3 +127,58 @@ class PreparedData:
             "avgMinNext": self.avgMinNext,
             "avgPriceNext": self.avgPriceNext
         }
+class Dirrection(Enum):
+    Red = 1
+    Green = 2
+class BuyType(Enum):
+    Hold = 1
+    Long = 2
+    Short = 3
+
+class Recomendation:
+    buyType: BuyType
+    maxPrice: float
+    minPrice: float
+    openPrice: float
+    closePrice: float
+    avgPrice: float
+    diffProcent: float
+    sl: float
+    tp: float
+    diffBenefit: float
+    diffLose: float
+    direction: Dirrection
+    slMax: float
+    tpMax: float
+    diffSlMax: float
+    diffTpMax: float
+    def __init__(self,lastCandle: DirtData, params):
+        currentAvg = lastCandle.getAvg()
+        self.openPrice = lastCandle.openPrice - params[0]
+        self.closePrice = lastCandle.closePrice - params[1]
+        self.maxPrice = lastCandle.maxPrice - params[2]
+        self.minPrice = lastCandle.minPrice - params[3]
+        self.avgPrice = currentAvg - params[4]
+        self.buyType = BuyType.Long if self.avgPrice > currentAvg else BuyType.Short
+        self.diffProcent = abs(100 - self.avgPrice * 100 / currentAvg)
+        self.tp = min([self.openPrice, self.closePrice]) if self.buyType == BuyType.Short else max([self.openPrice, self.closePrice])
+        self.sl = max([self.openPrice, self.closePrice]) if self.buyType == BuyType.Short else min([self.openPrice, self.closePrice])
+        self.diffBenefit = abs(100 - self.tp * 100 / currentAvg)
+        self.diffLose = abs(100 - self.sl * 100 / currentAvg)
+        self.direction = Dirrection.Red if self.closePrice < self.openPrice else Dirrection.Green
+        
+        self.tpMax = min([self.minPrice, self.maxPrice]) if self.buyType == BuyType.Short else max([self.minPrice, self.maxPrice])
+        self.slMax = max([self.minPrice, self.maxPrice]) if self.buyType == BuyType.Short else min([self.minPrice, self.maxPrice])
+        self.diffSlMax = abs(100 - self.tpMax * 100 / currentAvg)
+        self.diffTpMax = abs(100 - self.slMax * 100 / currentAvg)
+
+        self.buyType = BuyType.Hold if (
+                (self.buyType == BuyType.Short and self.direction == Dirrection.Green) or
+                (self.buyType == BuyType.Long and self.direction == Dirrection.Red) or
+                (self.avgPrice > self.sl and self.avgPrice > self.tp) or
+                (self.avgPrice < self.sl and self.avgPrice < self.tp) or
+                (currentAvg > self.sl and self.buyType == BuyType.Short) or
+                (currentAvg < self.sl and self.buyType == BuyType.Long) or
+                (currentAvg > self.tp and self.buyType == BuyType.Short) or
+                (currentAvg < self.tp and self.buyType == BuyType.Long)
+            ) else self.buyType

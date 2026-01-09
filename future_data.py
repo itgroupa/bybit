@@ -1,12 +1,52 @@
 import requests
 from consts import BI_BIT_API, INPUT, MACD_LONG, MACD_SHORT, WINDOW
-from dto import DirtData, MiddleData
+from dto import DirtData, MiddleData, Recomendation
 from datetime import datetime, timedelta
 import tensorflow as tf
 import joblib
 import numpy as np
 
 from utils import convertFromStockToData, getArrayFromResponse, getXMiddle
+
+def loadModel(modelFile, scaledXFile, scaledYFile):
+    model = tf.keras.models.load_model(modelFile)
+
+    model.summary()
+
+    scaler_X = joblib.load(scaledXFile)
+    scaler_y = joblib.load(scaledYFile)
+
+    return model, scaler_X, scaler_y
+
+def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y):
+
+    array: list[MiddleData] = []
+    for index in range(MACD_LONG, len(dirtData) -  1):
+        current = dirtData[index]
+        prev = dirtData[index - 1]
+        longMacd = dirtData[index - MACD_LONG: index]
+        shortMacd = dirtData[index - MACD_SHORT: index]
+        newVal = MiddleData(current, prev, shortMacd, longMacd)
+        array.append(newVal)
+
+    transformedData = getXMiddle(array);
+    raw_X = np.array(transformedData)
+
+    print("raw_X: ", len(raw_X))
+
+    X_last = raw_X[-WINDOW:]
+    X_last_scaled = scaler_X.transform(X_last)
+    X_last_scaled = X_last_scaled.reshape(1, WINDOW, INPUT)
+
+    
+    y_pred_scaled = model.predict(X_last_scaled)
+    y_pred = scaler_y.inverse_transform(y_pred_scaled)
+
+    lastCandle = dirtData[-1]
+    future = y_pred[0]
+    results = Recomendation(lastCandle, future)
+    return results, lastCandle
+
 
 def futureData(params, modelFile, scaledXFile, scaledYFile):
     newParams = params.copy()
@@ -24,37 +64,9 @@ def futureData(params, modelFile, scaledXFile, scaledYFile):
         dirtData.append(nextData)
     print("data len: ", len(dirtData))
 
-    model = tf.keras.models.load_model(modelFile)
+    model, scaler_X, scaler_y = loadModel(modelFile, scaledXFile, scaledYFile)
+    results, lastCandle = getFuture(dirtData, model, scaler_X, scaler_y)
 
-    model.summary()
-
-    scaler_X = joblib.load(scaledXFile)
-    scaler_y = joblib.load(scaledYFile)
-
-    array: list[MiddleData] = []
-    for index in range(MACD_LONG, len(dirtData) -  1):
-        current = dirtData[index]
-        prev = dirtData[index - 1]
-        longMacd = dirtData[index - MACD_LONG: index]
-        shortMacd = dirtData[index - MACD_SHORT: index]
-        newVal = MiddleData(current, prev, shortMacd, longMacd)
-        array.append(newVal)
-
-    transformedData = getXMiddle(array);
-    raw_X = np.array(transformedData)  # (N, 11)
-
-    print("raw_X: ", len(raw_X))
-
-    X_last = raw_X[-WINDOW:]
-    X_last_scaled = scaler_X.transform(X_last)
-    X_last_scaled = X_last_scaled.reshape(1, WINDOW, INPUT)
-
-    
-    y_pred_scaled = model.predict(X_last_scaled)
-    y_pred = scaler_y.inverse_transform(y_pred_scaled)
-
-    lastCandle = dirtData[-1]
-    future = y_pred[0]
     print("coin: ", params["symbol"])
     print("current date: ", datetime.fromtimestamp(lastCandle.time/1000))
 
@@ -68,11 +80,13 @@ def futureData(params, modelFile, scaledXFile, scaledYFile):
 
     print("")
 
-    print("next open: ", lastCandle.openPrice - future[0])
-    print("next close: ", lastCandle.closePrice - future[1])
-    print("next max: ", lastCandle.maxPrice - future[2])
-    print("next min: ", lastCandle.minPrice - future[3])
-    print("next price: ", lastCandle.getAvg() - future[4])
+    print(f"recomendation type {results.buyType}")
+    print("next price: ", f"{results.avgPrice}, procents: {results.diffProcent:.4f}%")
+    print("tp price: ", f"{results.tp}, procents: {results.diffBenefit:.4f}%")
+    print("tp price max: ", f"{results.tpMax}, procents: {results.diffTpMax:.4f}%")
+    print("sl price: ", f"{results.sl}, procents: {results.diffLose:.4f}%")
+    print("sl price max: ", f"{results.slMax}, procents: {results.diffSlMax:.4f}%")
+    print(f"dirrection: {results.direction}")
 
     print("")
 

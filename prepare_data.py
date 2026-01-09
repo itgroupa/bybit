@@ -4,10 +4,16 @@ import json
 from consts import MACD_LONG, MACD_SHORT, NEXT_PERIOD
 from dto import DirtData, PreparedData
 
-def prepareData(dirtFileData, preparedFileData):
+def getDirtData(dirtFileData):
     dirtData: list[DirtData]
     with open(dirtFileData, 'r', encoding='utf-8') as f:
         dirtData = [DirtData(**item) for item in json.load(f)]
+    return dirtData;
+
+def prepareData(dirtFileData, preparedFileData):
+
+    dirtData = getDirtData(dirtFileData)
+
     print("prepared data len: ", len(dirtData))
     print("open price [0]: ", dirtData[0].openPrice)
     print("start time: ", datetime.fromtimestamp(dirtData[0].time/1000))

@@ -27,15 +27,21 @@ if __name__ == "__main__":
                         type=str, 
                         default="BTCUSDT",
                         help="The trading symbol to process (e.g., BTCUSDT)")
+    parser.add_argument('-w', '--work', 
+                        action='store_true',
+                        help="with study")
     
     args = parser.parse_args()
     symbol = args.symbol
+    study = args.work
 
+    print("with study: ", study)
     params = getParams(symbol)
 
     print("start: ", symbol)
 
-    getData(params["params"], params["dirtFileData"])
-    prepareData(params["dirtFileData"], params["preparedFileData"])
-    studyData(params["preparedFileData"], params["modelFile"], params["scaledXFile"], params["scaledYFile"])
+    if study:
+        getData(params["params"], params["dirtFileData"])
+        prepareData(params["dirtFileData"], params["preparedFileData"])
+        studyData(params["preparedFileData"], params["modelFile"], params["scaledXFile"], params["scaledYFile"])
     futureData(params["params"], params["modelFile"], params["scaledXFile"], params["scaledYFile"])
