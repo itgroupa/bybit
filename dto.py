@@ -29,7 +29,7 @@ class DirtData:
             "turnOver": self.turnOver
         }
     def getAvg(self):
-        return (self.openPrice + self.closePrice) / 2
+        return self.closePrice
     def getAvgOpen(self):
         return self.getAvg() - self.openPrice
     def getAvgClose(self):
@@ -42,24 +42,37 @@ class DirtData:
 class MiddleData:
     time: int
     price: float
-    macdCurrent: float
+    macdCurrentHours: float
+    macdCurrentDays: float
+    macdCurrentMiddle: float
+    macdCurrentLong: float
     volume: float
     
     def __init__(self, current: DirtData, 
                  prev: DirtData, 
-                 macdCurrentShort: list[DirtData], 
+                 macdCurrentHours: list[DirtData],
+                 macdCurrentDays: list[DirtData], 
+                 macdCurrentMiddle: list[DirtData], 
                  macdCurrentLong: list[DirtData]):
         self.time = current.time
         self.volume = current.volume
-        self.price = current.getAvg() / prev.getAvg()
-        macdCurrentTemp = sum(item.getAvg() for item in macdCurrentShort) / len(macdCurrentShort) -  sum(item.getAvg() for item in macdCurrentLong) / len(macdCurrentLong)
-        self.macdCurrent = macdCurrentTemp
+        self.price = current.getAvg() - prev.getAvg()
+        self.macdCurrentHours = current.getAvg() - sum(item.getAvg() for item in macdCurrentHours) / len(macdCurrentHours)
+        self.macdCurrentDays = (sum(item.getAvg() for item in macdCurrentHours) / len(macdCurrentHours) -
+            sum(item.getAvg() for item in macdCurrentDays) / len(macdCurrentDays))
+        self.macdCurrentMiddle = (sum(item.getAvg() for item in macdCurrentDays) / len(macdCurrentDays) -
+            sum(item.getAvg() for item in macdCurrentMiddle) / len(macdCurrentMiddle))
+        self.macdCurrentLong = (sum(item.getAvg() for item in macdCurrentMiddle) / len(macdCurrentMiddle) -
+            sum(item.getAvg() for item in macdCurrentLong) / len(macdCurrentLong))
 
 @dataclass
 class PreparedData:
     time: int
     price: float
-    macdCurrent: float
+    macdCurrentHours: float
+    macdCurrentDays: float
+    macdCurrentMiddle: float
+    macdCurrentLong: float
     volume: float
     avgOpenNext: float
     avgCloseNext: float
@@ -69,7 +82,10 @@ class PreparedData:
 
     def __init__(self, time: int,
         price: float,
-        macdCurrent: float,
+        macdCurrentHours: float,
+        macdCurrentDays: float,
+        macdCurrentMiddle: float,
+        macdCurrentLong: float,
         volume: float,
         avgOpenNext: float,
         avgCloseNext: float,
@@ -78,7 +94,10 @@ class PreparedData:
         avgPriceNext: float):
             self.time = time
             self.price = price
-            self.macdCurrent = macdCurrent
+            self.macdCurrentHours = macdCurrentHours
+            self.macdCurrentDays = macdCurrentDays
+            self.macdCurrentMiddle = macdCurrentMiddle
+            self.macdCurrentLong = macdCurrentLong
             self.volume = volume
             self.avgOpenNext = avgOpenNext
             self.avgCloseNext = avgCloseNext
@@ -88,15 +107,20 @@ class PreparedData:
 
     def create(current: DirtData, 
                  prev: DirtData, 
-                 macdCurrentShort: list[DirtData], 
+                 macdCurrentHours: list[DirtData],
+                 macdCurrentDays: list[DirtData], 
+                 macdCurrentMiddle: list[DirtData], 
                  macdCurrentLong: list[DirtData],
                  nextData: list[DirtData]):
-        temNewVal = MiddleData(current, prev, macdCurrentShort, macdCurrentLong)
+        temNewVal = MiddleData(current, prev, macdCurrentHours, macdCurrentDays, macdCurrentMiddle, macdCurrentLong)
         
         time = temNewVal.time
         volume = temNewVal.volume
         price = temNewVal.price
-        macdCurrent = temNewVal.macdCurrent
+        macdCurrentHours = temNewVal.macdCurrentHours
+        macdCurrentDays = temNewVal.macdCurrentDays
+        macdCurrentMiddle = temNewVal.macdCurrentMiddle
+        macdCurrentLong = temNewVal.macdCurrentLong
         avgOpenNext = current.openPrice - sum(item.openPrice for item in nextData) / len(nextData)  
         avgCloseNext = current.closePrice - sum(item.closePrice for item in nextData) / len(nextData)
         avgMaxNext = current.maxPrice - max(item.maxPrice for item in nextData)
@@ -106,7 +130,10 @@ class PreparedData:
 
         return PreparedData(time,
             price,
-            macdCurrent,
+            macdCurrentHours,
+            macdCurrentDays,
+            macdCurrentMiddle,
+            macdCurrentLong,
             volume,
             avgOpenNext,
             avgCloseNext,
@@ -119,7 +146,10 @@ class PreparedData:
         return {
             "time": self.time,
             "price": self.price,
-            "macdCurrent": self.macdCurrent,
+            "macdCurrentHours": self.macdCurrentHours,
+            "macdCurrentDays": self.macdCurrentDays,
+            "macdCurrentMiddle": self.macdCurrentMiddle,
+            "macdCurrentLong": self.macdCurrentLong,
             "volume": self.volume,
             "avgOpenNext": self.avgOpenNext,
             "avgCloseNext": self.avgCloseNext,

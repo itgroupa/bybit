@@ -1,5 +1,5 @@
 import requests
-from consts import BI_BIT_API, INPUT, MACD_LONG, MACD_SHORT, WINDOW
+from consts import BI_BIT_API, INPUT, MACD_LONG, MACD_HOURS, MACD_DAYS, MACD_MIDDLE, WINDOW
 from dto import DirtData, MiddleData, Recomendation
 from datetime import datetime, timedelta
 import tensorflow as tf
@@ -25,8 +25,10 @@ def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y):
         current = dirtData[index]
         prev = dirtData[index - 1]
         longMacd = dirtData[index - MACD_LONG: index]
-        shortMacd = dirtData[index - MACD_SHORT: index]
-        newVal = MiddleData(current, prev, shortMacd, longMacd)
+        hoursMacd = dirtData[index - MACD_HOURS: index]
+        daysMacd = dirtData[index - MACD_DAYS: index]
+        middleMacd = dirtData[index - MACD_MIDDLE: index]
+        newVal = MiddleData(current, prev, hoursMacd, daysMacd, middleMacd, longMacd)
         array.append(newVal)
 
     transformedData = getXMiddle(array);

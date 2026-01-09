@@ -16,7 +16,10 @@ def getXPrepared(val: list[PreparedData]):
     result = []
     for item in val:
         result.append([item.price,
-            item.macdCurrent,
+            item.macdCurrentHours,
+            item.macdCurrentDays,
+            item.macdCurrentMiddle,
+            item.macdCurrentLong,
             item.volume])
     return result;
 
@@ -34,6 +37,9 @@ def getXMiddle(val: list[MiddleData]):
     result = []
     for item in val:
         result.append([item.price,
-            item.macdCurrent,
+            item.macdCurrentHours,
+            item.macdCurrentDays,
+            item.macdCurrentMiddle,
+            item.macdCurrentLong,
             item.volume])
     return result
