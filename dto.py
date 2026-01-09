@@ -29,7 +29,7 @@ class DirtData:
             "turnOver": self.turnOver
         }
     def getAvg(self):
-        return self.closePrice
+        return (self.closePrice + self.openPrice) / 2
     def getAvgOpen(self):
         return self.getAvg() - self.openPrice
     def getAvgClose(self):
@@ -125,7 +125,7 @@ class PreparedData:
         avgCloseNext = current.closePrice - sum(item.closePrice for item in nextData) / len(nextData)
         avgMaxNext = current.maxPrice - max(item.maxPrice for item in nextData)
         avgMinNext = current.minPrice - min(item.minPrice for item in nextData)
-        avgPriceNext = current.getAvg() - sum(item.getAvg() for item in nextData) / len(nextData)
+        avgPriceNext = current.closePrice - sum(item.closePrice for item in nextData) / len(nextData)
         
 
         return PreparedData(time,
@@ -183,7 +183,7 @@ class Recomendation:
     diffSlMax: float
     diffTpMax: float
     def __init__(self,lastCandle: DirtData, params):
-        currentAvg = lastCandle.getAvg()
+        currentAvg = lastCandle.closePrice
         self.openPrice = lastCandle.openPrice - params[0]
         self.closePrice = lastCandle.closePrice - params[1]
         self.maxPrice = lastCandle.maxPrice - params[2]
@@ -207,8 +207,6 @@ class Recomendation:
                 (self.buyType == BuyType.Long and self.direction == Dirrection.Red) or
                 (self.avgPrice > self.sl and self.avgPrice > self.tp) or
                 (self.avgPrice < self.sl and self.avgPrice < self.tp) or
-                (currentAvg > self.sl and self.buyType == BuyType.Short) or
-                (currentAvg < self.sl and self.buyType == BuyType.Long) or
-                (currentAvg < self.tp and self.buyType == BuyType.Short) or
-                (currentAvg > self.tp and self.buyType == BuyType.Long)
+                (currentAvg > self.sl and self.buyType == BuyType.Short and currentAvg > self.tp and currentAvg < self.slMax) or
+                (currentAvg < self.sl and self.buyType == BuyType.Long and currentAvg < self.tp and currentAvg > self.slMax)
             ) else self.buyType

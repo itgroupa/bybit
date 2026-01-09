@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from consts import MACD_LONG
-from dto import BuyType
+from dto import BuyType, Recomendation
 from future_data import getFuture, loadModel
 from main_usdt import getParams
 from prepare_data import getDirtData
@@ -12,6 +12,26 @@ class StateType(Enum):
     SHORT = 2
     LONG =3
 
+class HistoryState(Enum):
+    PLUS = 1
+    MINUS = 2
+    FREE = 3
+
+class History:
+    plus: int
+    minus: int
+
+    maxPlus: int
+    maxMinus: int
+
+    def __init__(self):
+        self.maxPlus = 0;
+        self.maxMinus = 0
+        self.plus = 0
+        self.minus = 0
+
+
+
 class State:
     stateType: StateType
     volume: float
@@ -20,6 +40,7 @@ class State:
     tp: float
     ts: int
     currentPrice: float
+    rec: Recomendation
     def __init__(self):
         self.stateType = StateType.FREE
         self.volume = 0
@@ -51,14 +72,17 @@ if __name__ == "__main__":
 
     state = State()
 
-    plus = 0
-    minus = 0
+
+    history = History()
+    historyState = HistoryState.FREE
+    maxPlus = 0
+    maxMinus = 0
 
     for index in range(MACD_LONG * 4, len(dirtData)-1):
         sliceDirt = dirtData[index - MACD_LONG * 3 : index]
         if state.stateType == StateType.FREE:
             results, lastCandle = getFuture(sliceDirt, model, scaler_X, scaler_y)
-            avgMlPrice = lastCandle.getAvg()
+            avgMlPrice = lastCandle.closePrice
             if results.buyType == BuyType.Hold:
                 continue
             if results.buyType == BuyType.Short or results.buyType == BuyType.Long:
@@ -68,16 +92,16 @@ if __name__ == "__main__":
                 state.sl = results.slMax
                 state.ts = lastCandle.time
                 state.currentPrice = avgMlPrice
+                state.rec = results
                 continue
 
         currentCandle = dirtData[index]
-        currentAvg = currentCandle.getAvg()
 
         if state.stateType == StateType.SHORT:
-            if currentAvg < state.tp or currentAvg > state.sl:
+            if currentCandle.minPrice < state.tp or currentCandle.maxPrice > state.sl:
                 state.stateType = StateType.FREE
 
-                futurePrice = state.tp if currentAvg < state.tp else state.sl
+                futurePrice = state.sl if currentCandle.maxPrice > state.sl else state.tp
 
                 turnOverCurrent = state.volume * futurePrice
                 turnOverPrev = state.volume * state.currentPrice
@@ -85,9 +109,41 @@ if __name__ == "__main__":
                 nextWallet =  turnOverPrev + (turnOverPrev - turnOverCurrent)
 
                 if nextWallet > state.wallet:
-                    plus = plus + 1
+                    history.plus = history.plus + 1
+                    if historyState == HistoryState.MINUS and maxMinus > history.maxMinus:
+                        history.maxMinus = maxMinus
+                    maxMinus = 0
+                    if historyState == HistoryState.PLUS:
+                        maxPlus = maxPlus +1
+                    historyState = HistoryState.PLUS
+
+                    print("++++++++++++++++++++++++++++++++++++++++")
+                    print(f"recomendation type {state.rec.buyType}")
+                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
+                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
+                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
+                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
+                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
+                    print(f"dirrection: {state.rec.direction}")
+
                 else:
-                    minus = minus + 1
+                    history.minus = history.minus + 1
+                    if historyState == HistoryState.PLUS and maxPlus > history.maxPlus:
+                        history.maxPlus = maxPlus
+                    maxPlus = 0
+                    if historyState == HistoryState.MINUS:
+                        maxMinus = maxMinus +1
+                    historyState = HistoryState.MINUS
+                    print("-----------------------------------------")
+                    print(f"recomendation type {state.rec.buyType}")
+                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
+                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
+                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
+                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
+                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
+                    print(f"dirrection: {state.rec.direction}")
+
+
 
                 state.wallet = nextWallet
 
@@ -95,15 +151,43 @@ if __name__ == "__main__":
                 print(f"date: from {datetime.fromtimestamp(state.ts/1000)} to {datetime.fromtimestamp(currentCandle.time/1000)}")
                 continue
         if state.stateType == StateType.LONG:
-            if currentAvg > state.tp or currentAvg < state.sl:
+            if currentCandle.maxPrice > state.tp or currentCandle.minPrice < state.sl:
                 state.stateType = StateType.FREE
 
-                nextWallet = state.volume * (state.tp if currentAvg > state.tp else state.sl)
+                nextWallet = state.volume * (state.sl if currentCandle.minPrice < state.sl else state.tp)
 
                 if nextWallet > state.wallet:
-                    plus = plus + 1
+                    history.plus = history.plus + 1
+                    if historyState == HistoryState.MINUS and maxMinus > history.maxMinus:
+                        history.maxMinus = maxMinus
+                    maxMinus = 0
+                    if historyState == HistoryState.PLUS:
+                        maxPlus = maxPlus +1
+                    historyState = HistoryState.PLUS
+                    print("++++++++++++++++++++++++++++++++++++++++")
+                    print(f"recomendation type {state.rec.buyType}")
+                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
+                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
+                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
+                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
+                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
+                    print(f"dirrection: {state.rec.direction}")
                 else:
-                    minus = minus + 1
+                    history.minus = history.minus + 1
+                    if historyState == HistoryState.PLUS and maxPlus > history.maxPlus:
+                        history.maxPlus = maxPlus
+                    maxPlus = 0
+                    if historyState == HistoryState.MINUS:
+                        maxMinus = maxMinus +1
+                    historyState = HistoryState.MINUS
+                    print("-----------------------------------------")
+                    print(f"recomendation type {state.rec.buyType}")
+                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
+                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
+                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
+                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
+                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
+                    print(f"dirrection: {state.rec.direction}")
 
                 state.wallet = nextWallet
 
@@ -118,6 +202,6 @@ if __name__ == "__main__":
 
     print("symbol: ", symbol)
     print("benefits: ", state.wallet)
-    print("plus: ", plus)
-    print("minus: ", minus)
+    print("plus: ", history.plus, ", max plus: ", history.maxPlus)
+    print("minus: ", history.minus, ", max minus: ", history.maxMinus)
 
