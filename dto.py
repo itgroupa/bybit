@@ -179,6 +179,6 @@ class Recomendation:
                 (self.avgPrice < self.sl and self.avgPrice < self.tp) or
                 (currentAvg > self.sl and self.buyType == BuyType.Short) or
                 (currentAvg < self.sl and self.buyType == BuyType.Long) or
-                (currentAvg > self.tp and self.buyType == BuyType.Short) or
-                (currentAvg < self.tp and self.buyType == BuyType.Long)
+                (currentAvg < self.tp and self.buyType == BuyType.Short) or
+                (currentAvg > self.tp and self.buyType == BuyType.Long)
             ) else self.buyType
