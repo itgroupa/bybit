@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-"C:\work\Repositories\bybit\first\Scripts\pip" install --upgrade certifi
+"PY=C:\work\Repositories\bybit\first\Scripts\pip" install --upgrade certifi
 
 echo.
 echo With Training? [Y/N]

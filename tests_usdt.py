@@ -125,7 +125,7 @@ if __name__ == "__main__":
                     historyState = HistoryState.PLUS
 
                     print("++++++++++++++++++++++++++++++++++++++++")
-                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType=)
+                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType)
 
                 else:
                     history.minus = history.minus + 1
