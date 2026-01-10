@@ -17,8 +17,8 @@ def studyData(preparedFileData, modelFile, skaledXFile, scaledYFile):
     print("len: ", len(preparedData))
     print("next open price [0]: ", preparedData[0].avgOpenNext)
 
-    raw_X = np.array(getXPrepared(preparedData))  # (N, 11)
-    raw_y = np.array(getYPrepared(preparedData))  # (N, 4)
+    raw_X = np.array(getXPrepared(preparedData))
+    raw_y = np.array(getYPrepared(preparedData))
 
     X = []
     y = []

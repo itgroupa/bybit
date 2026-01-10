@@ -207,6 +207,8 @@ class Recomendation:
                 (self.buyType == BuyType.Long and self.direction == Dirrection.Red) or
                 (self.avgPrice > self.sl and self.avgPrice > self.tp) or
                 (self.avgPrice < self.sl and self.avgPrice < self.tp) or
-                (currentAvg > self.sl and self.buyType == BuyType.Short and currentAvg > self.tp and currentAvg < self.slMax) or
-                (currentAvg < self.sl and self.buyType == BuyType.Long and currentAvg < self.tp and currentAvg > self.slMax)
+                (self.buyType == BuyType.Short and (currentAvg < self.tp or currentAvg > self.slMax)) or #all
+                (self.buyType == BuyType.Long and (currentAvg > self.tp or currentAvg < self.slMax)) or
+                (self.buyType == BuyType.Short and currentAvg > self.sl) or #soft, only in the middle
+                (self.buyType == BuyType.Long and currentAvg < self.sl)
             ) else self.buyType

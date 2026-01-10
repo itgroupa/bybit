@@ -8,6 +8,28 @@ import numpy as np
 
 from utils import convertFromStockToData, getArrayFromResponse, getXMiddle
 
+def printRecommendation(results: Recomendation, symbol: str, lastCandle: DirtData):
+    print("coin: ", symbol)
+    print("current date: ", datetime.fromtimestamp(lastCandle.time/1000))
+
+    print("")
+
+    print("current open: ", lastCandle.openPrice)
+    print("current close: ", lastCandle.closePrice)
+    print("current max: ", lastCandle.maxPrice)
+    print("current min: ", lastCandle.minPrice)
+    print("current price: ", lastCandle.getAvg())
+
+    print("")
+
+    print(f"recomendation type {results.buyType}")
+    print("next price: ", f"{results.avgPrice}, procents: {results.diffProcent:.4f}%")
+    print("tp price: ", f"{results.tp}, procents: {results.diffBenefit:.4f}%")
+    print("tp price max: ", f"{results.tpMax}, procents: {results.diffTpMax:.4f}%")
+    print("sl price: ", f"{results.sl}, procents: {results.diffLose:.4f}%")
+    print("sl price max: ", f"{results.slMax}, procents: {results.diffSlMax:.4f}%")
+    print(f"dirrection: {results.direction}")
+
 def loadModel(modelFile, scaledXFile, scaledYFile):
     model = tf.keras.models.load_model(modelFile)
 
@@ -52,7 +74,7 @@ def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y):
 
 def futureData(params, modelFile, scaledXFile, scaledYFile):
     newParams = params.copy()
-    prevTs = (datetime.now() - timedelta(days=4)).timestamp() * 1000
+    prevTs = (datetime.now() - timedelta(days=3)).timestamp() * 1000
     newParams["start"] = int(prevTs)
 
     print("start", datetime.fromtimestamp(int(newParams["start"])/1000))
@@ -69,26 +91,7 @@ def futureData(params, modelFile, scaledXFile, scaledYFile):
     model, scaler_X, scaler_y = loadModel(modelFile, scaledXFile, scaledYFile)
     results, lastCandle = getFuture(dirtData, model, scaler_X, scaler_y)
 
-    print("coin: ", params["symbol"])
-    print("current date: ", datetime.fromtimestamp(lastCandle.time/1000))
-
-    print("")
-
-    print("current open: ", lastCandle.openPrice)
-    print("current close: ", lastCandle.closePrice)
-    print("current max: ", lastCandle.maxPrice)
-    print("current min: ", lastCandle.minPrice)
-    print("current price: ", lastCandle.getAvg())
-
-    print("")
-
-    print(f"recomendation type {results.buyType}")
-    print("next price: ", f"{results.avgPrice}, procents: {results.diffProcent:.4f}%")
-    print("tp price: ", f"{results.tp}, procents: {results.diffBenefit:.4f}%")
-    print("tp price max: ", f"{results.tpMax}, procents: {results.diffTpMax:.4f}%")
-    print("sl price: ", f"{results.sl}, procents: {results.diffLose:.4f}%")
-    print("sl price max: ", f"{results.slMax}, procents: {results.diffSlMax:.4f}%")
-    print(f"dirrection: {results.direction}")
+    printRecommendation(results, params["symbol"], lastCandle)
 
     print("")
 

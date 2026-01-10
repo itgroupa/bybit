@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from consts import MACD_LONG
 from dto import BuyType, Recomendation
-from future_data import getFuture, loadModel
+from future_data import getFuture, loadModel, printRecommendation
 from main_usdt import getParams
 from prepare_data import getDirtData
 import argparse
@@ -118,13 +118,7 @@ if __name__ == "__main__":
                     historyState = HistoryState.PLUS
 
                     print("++++++++++++++++++++++++++++++++++++++++")
-                    print(f"recomendation type {state.rec.buyType}")
-                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
-                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
-                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
-                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
-                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
-                    print(f"dirrection: {state.rec.direction}")
+                    printRecommendation(state.rec, symbol, sliceDirt[-1])
 
                 else:
                     history.minus = history.minus + 1
@@ -135,13 +129,7 @@ if __name__ == "__main__":
                         maxMinus = maxMinus +1
                     historyState = HistoryState.MINUS
                     print("-----------------------------------------")
-                    print(f"recomendation type {state.rec.buyType}")
-                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
-                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
-                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
-                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
-                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
-                    print(f"dirrection: {state.rec.direction}")
+                    printRecommendation(state.rec, symbol, sliceDirt[-1])
 
 
 
@@ -165,13 +153,7 @@ if __name__ == "__main__":
                         maxPlus = maxPlus +1
                     historyState = HistoryState.PLUS
                     print("++++++++++++++++++++++++++++++++++++++++")
-                    print(f"recomendation type {state.rec.buyType}")
-                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
-                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
-                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
-                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
-                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
-                    print(f"dirrection: {state.rec.direction}")
+                    printRecommendation(state.rec, symbol, sliceDirt[-1])
                 else:
                     history.minus = history.minus + 1
                     if historyState == HistoryState.PLUS and maxPlus > history.maxPlus:
@@ -181,13 +163,7 @@ if __name__ == "__main__":
                         maxMinus = maxMinus +1
                     historyState = HistoryState.MINUS
                     print("-----------------------------------------")
-                    print(f"recomendation type {state.rec.buyType}")
-                    print("next price: ", f"{state.rec.avgPrice}, procents: {results.diffProcent:.4f}%")
-                    print("tp price: ", f"{state.rec.tp}, procents: {results.diffBenefit:.4f}%")
-                    print("tp price max: ", f"{state.rec.tpMax}, procents: {results.diffTpMax:.4f}%")
-                    print("sl price: ", f"{state.rec.sl}, procents: {results.diffLose:.4f}%")
-                    print("sl price max: ", f"{state.rec.slMax}, procents: {results.diffSlMax:.4f}%")
-                    print(f"dirrection: {state.rec.direction}")
+                    printRecommendation(state.rec, symbol, sliceDirt[-1])
 
                 state.wallet = nextWallet
 

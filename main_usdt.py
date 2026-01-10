@@ -10,7 +10,7 @@ def getParams(symbol: str):
         "params": {
                 "category": "spot",
                 "symbol": symbol,
-                "interval": "60",
+                "interval": "15",
                 "limit": 1000,
                 "start": "1293159702000"
             },

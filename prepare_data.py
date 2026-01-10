@@ -15,7 +15,6 @@ def prepareData(dirtFileData, preparedFileData):
     dirtData = getDirtData(dirtFileData)
 
     print("prepared data len: ", len(dirtData))
-    print("open price [0]: ", dirtData[0].openPrice)
     print("start time: ", datetime.fromtimestamp(dirtData[0].time/1000))
     array: list[PreparedData] = []
     for index in range(MACD_LONG, len(dirtData) - NEXT_PERIOD -  1):
