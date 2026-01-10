@@ -164,6 +164,10 @@ class BuyType(Enum):
     Hold = 1
     Long = 2
     Short = 3
+class TargetType(Enum):
+    Common = 1
+    Hard = 2
+    Soft = 3
 
 class Recomendation:
     buyType: BuyType
@@ -182,7 +186,7 @@ class Recomendation:
     tpMax: float
     diffSlMax: float
     diffTpMax: float
-    def __init__(self,lastCandle: DirtData, params):
+    def __init__(self,lastCandle: DirtData, params, targetType):
         currentAvg = lastCandle.closePrice
         self.openPrice = lastCandle.openPrice - params[0]
         self.closePrice = lastCandle.closePrice - params[1]
@@ -208,7 +212,15 @@ class Recomendation:
                 (self.avgPrice > self.sl and self.avgPrice > self.tp) or
                 (self.avgPrice < self.sl and self.avgPrice < self.tp) or
                 (self.buyType == BuyType.Short and (currentAvg < self.tp or currentAvg > self.slMax)) or #all
-                (self.buyType == BuyType.Long and (currentAvg > self.tp or currentAvg < self.slMax)) or
-                (self.buyType == BuyType.Short and currentAvg > self.sl) or #soft, only in the middle
-                (self.buyType == BuyType.Long and currentAvg < self.sl)
+                (self.buyType == BuyType.Long and (currentAvg > self.tp or currentAvg < self.slMax))
             ) else self.buyType
+        if targetType == TargetType.Soft and self.buyType != BuyType.Hold:
+            self.buyType = BuyType.Hold if (
+                    (self.buyType == BuyType.Short and currentAvg > self.sl) or #soft, only in the middle
+                    (self.buyType == BuyType.Long and currentAvg < self.sl)
+                ) else self.buyType
+        if targetType == TargetType.Hard and self.buyType != BuyType.Hold:
+            self.buyType = BuyType.Hold if (
+                    (self.buyType == BuyType.Short and currentAvg < self.sl) or #hard, only in the extr
+                    (self.buyType == BuyType.Long and currentAvg > self.sl)
+                ) else self.buyType

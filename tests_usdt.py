@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from consts import MACD_LONG
-from dto import BuyType, Recomendation
+from dto import BuyType, Recomendation, TargetType
 from future_data import getFuture, loadModel, printRecommendation
 from main_usdt import getParams
 from prepare_data import getDirtData
@@ -55,8 +55,14 @@ if __name__ == "__main__":
                         type=str, 
                         default="BTCUSDT",
                         help="The trading symbol to process (e.g., BTCUSDT)")
+    parser.add_argument('-tt', '--targetType', 
+                        type=lambda x: TargetType[x],
+                        choices=list(TargetType),
+                        default=TargetType.Common,
+                        help="Target Type (Common, Hard, Soft)")
     args = parser.parse_args()
     symbol = args.symbol
+    targetType = args.targetType
 
     params = getParams(symbol)
 
@@ -69,6 +75,7 @@ if __name__ == "__main__":
     dirtData = getDirtData(dirtFile)
 
     print("start: ", symbol)
+    print("target type: ", targetType)
 
     state = State()
 
@@ -81,7 +88,7 @@ if __name__ == "__main__":
     for index in range(MACD_LONG * 4, len(dirtData)-1):
         sliceDirt = dirtData[index - MACD_LONG * 3 : index]
         if state.stateType == StateType.FREE:
-            results, lastCandle = getFuture(sliceDirt, model, scaler_X, scaler_y)
+            results, lastCandle = getFuture(sliceDirt, model, scaler_X, scaler_y, targetType)
             avgMlPrice = lastCandle.closePrice
             if results.buyType == BuyType.Hold:
                 continue

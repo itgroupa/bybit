@@ -1,6 +1,6 @@
 import requests
 from consts import BI_BIT_API, INPUT, MACD_LONG, MACD_HOURS, MACD_DAYS, MACD_MIDDLE, WINDOW
-from dto import DirtData, MiddleData, Recomendation
+from dto import DirtData, MiddleData, Recomendation, TargetType
 from datetime import datetime, timedelta
 import tensorflow as tf
 import joblib
@@ -40,7 +40,7 @@ def loadModel(modelFile, scaledXFile, scaledYFile):
 
     return model, scaler_X, scaler_y
 
-def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y):
+def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y, targetType: TargetType):
 
     array: list[MiddleData] = []
     for index in range(MACD_LONG, len(dirtData) -  1):
@@ -68,11 +68,11 @@ def getFuture(dirtData: list[DirtData],  model, scaler_X, scaler_y):
 
     lastCandle = dirtData[-1]
     future = y_pred[0]
-    results = Recomendation(lastCandle, future)
+    results = Recomendation(lastCandle, future, targetType)
     return results, lastCandle
 
 
-def futureData(params, modelFile, scaledXFile, scaledYFile):
+def futureData(params, modelFile, scaledXFile, scaledYFile, targetType: TargetType):
     newParams = params.copy()
     prevTs = (datetime.now() - timedelta(days=3)).timestamp() * 1000
     newParams["start"] = int(prevTs)
@@ -89,7 +89,7 @@ def futureData(params, modelFile, scaledXFile, scaledYFile):
     print("data len: ", len(dirtData))
 
     model, scaler_X, scaler_y = loadModel(modelFile, scaledXFile, scaledYFile)
-    results, lastCandle = getFuture(dirtData, model, scaler_X, scaler_y)
+    results, lastCandle = getFuture(dirtData, model, scaler_X, scaler_y, targetType)
 
     printRecommendation(results, params["symbol"], lastCandle)
 
