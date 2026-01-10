@@ -125,7 +125,7 @@ if __name__ == "__main__":
                     historyState = HistoryState.PLUS
 
                     print("++++++++++++++++++++++++++++++++++++++++")
-                    printRecommendation(state.rec, symbol, sliceDirt[-1])
+                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType=)
 
                 else:
                     history.minus = history.minus + 1
@@ -136,7 +136,7 @@ if __name__ == "__main__":
                         maxMinus = maxMinus +1
                     historyState = HistoryState.MINUS
                     print("-----------------------------------------")
-                    printRecommendation(state.rec, symbol, sliceDirt[-1])
+                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType)
 
 
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
                         maxPlus = maxPlus +1
                     historyState = HistoryState.PLUS
                     print("++++++++++++++++++++++++++++++++++++++++")
-                    printRecommendation(state.rec, symbol, sliceDirt[-1])
+                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType)
                 else:
                     history.minus = history.minus + 1
                     if historyState == HistoryState.PLUS and maxPlus > history.maxPlus:
@@ -170,7 +170,7 @@ if __name__ == "__main__":
                         maxMinus = maxMinus +1
                     historyState = HistoryState.MINUS
                     print("-----------------------------------------")
-                    printRecommendation(state.rec, symbol, sliceDirt[-1])
+                    printRecommendation(state.rec, symbol, sliceDirt[-1], targetType)
 
                 state.wallet = nextWallet
 

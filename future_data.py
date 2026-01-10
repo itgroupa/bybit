@@ -8,7 +8,7 @@ import numpy as np
 
 from utils import convertFromStockToData, getArrayFromResponse, getXMiddle
 
-def printRecommendation(results: Recomendation, symbol: str, lastCandle: DirtData):
+def printRecommendation(results: Recomendation, symbol: str, lastCandle: DirtData, targetType: TargetType):
     print("coin: ", symbol)
     print("current date: ", datetime.fromtimestamp(lastCandle.time/1000))
 
@@ -28,7 +28,7 @@ def printRecommendation(results: Recomendation, symbol: str, lastCandle: DirtDat
     print("tp price max: ", f"{results.tpMax}, procents: {results.diffTpMax:.4f}%")
     print("sl price: ", f"{results.sl}, procents: {results.diffLose:.4f}%")
     print("sl price max: ", f"{results.slMax}, procents: {results.diffSlMax:.4f}%")
-    print(f"dirrection: {results.direction}")
+    print(f"dirrection: {results.direction}, strategy type: {targetType}")
 
 def loadModel(modelFile, scaledXFile, scaledYFile):
     model = tf.keras.models.load_model(modelFile)
@@ -91,7 +91,7 @@ def futureData(params, modelFile, scaledXFile, scaledYFile, targetType: TargetTy
     model, scaler_X, scaler_y = loadModel(modelFile, scaledXFile, scaledYFile)
     results, lastCandle = getFuture(dirtData, model, scaler_X, scaler_y, targetType)
 
-    printRecommendation(results, params["symbol"], lastCandle)
+    printRecommendation(results, params["symbol"], lastCandle, targetType)
 
     print("")
 
