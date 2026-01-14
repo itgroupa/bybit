@@ -207,20 +207,20 @@ class Recomendation:
         self.diffTpMax = abs(100 - self.slMax * 100 / currentAvg)
 
         self.buyType = BuyType.Hold if (
-                (self.buyType == BuyType.Short and self.direction == Dirrection.Green) or
-                (self.buyType == BuyType.Long and self.direction == Dirrection.Red) or
-                (self.avgPrice > self.sl and self.avgPrice > self.tp) or
-                (self.avgPrice < self.sl and self.avgPrice < self.tp) or
+                #(self.buyType == BuyType.Short and self.direction == Dirrection.Green) or
+                #(self.buyType == BuyType.Long and self.direction == Dirrection.Red) or
+                #(self.avgPrice > self.sl and self.avgPrice > self.tp) or
+                #(self.avgPrice < self.sl and self.avgPrice < self.tp) or
                 (self.buyType == BuyType.Short and (currentAvg < self.tp or currentAvg > self.slMax)) or #all
                 (self.buyType == BuyType.Long and (currentAvg > self.tp or currentAvg < self.slMax))
             ) else self.buyType
-        if targetType == TargetType.Soft and self.buyType != BuyType.Hold:
-            self.buyType = BuyType.Hold if (
-                    (self.buyType == BuyType.Short and currentAvg > self.sl) or #soft, only in the middle
-                    (self.buyType == BuyType.Long and currentAvg < self.sl)
-                ) else self.buyType
-        if targetType == TargetType.Hard and self.buyType != BuyType.Hold:
-            self.buyType = BuyType.Hold if (
-                    (self.buyType == BuyType.Short and currentAvg < self.sl) or #hard, only in the extr
-                    (self.buyType == BuyType.Long and currentAvg > self.sl)
-                ) else self.buyType
+        #if targetType == TargetType.Soft and self.buyType != BuyType.Hold:
+            #self.buyType = BuyType.Hold if (
+                    #(self.buyType == BuyType.Short and currentAvg > self.sl) or #soft, only in the middle
+                    #(self.buyType == BuyType.Long and currentAvg < self.sl)
+                #) else self.buyType
+        #if targetType == TargetType.Hard and self.buyType != BuyType.Hold:
+           # self.buyType = BuyType.Hold if (
+                 #   (self.buyType == BuyType.Short and currentAvg < self.sl) or #hard, only in the extr
+                 #   (self.buyType == BuyType.Long and currentAvg > self.sl)
+                #) else self.buyType
