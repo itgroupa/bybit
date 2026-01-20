@@ -14,7 +14,7 @@ if errorlevel 2 (
 )
 
 set "PY=C:\work\Repositories\bybit\first\Scripts\python.exe"
-set "SCRIPT=C:\work\Repositories\bybit\main_usdt.py"
+set "SCRIPT=C:\work\Repositories\bybit\LSTM\main_usdt.py"
 
 
 wt -w 0 nt cmd /k "echo XRP/USDT && %PY% %SCRIPT% -s XRPUSDT %work_flag% -tt Hard" ^

@@ -1,7 +1,7 @@
 @echo off
 
 set "PY=C:\work\Repositories\bybit\first\Scripts\python.exe"
-set "SCRIPT=C:\work\Repositories\bybit\tests_usdt.py"
+set "SCRIPT=C:\work\Repositories\bybit\GRU\tests_usdt.py"
 
 
 wt -w 0 nt cmd /k "echo XRP/USDT && %PY% %SCRIPT% -s XRPUSDT -tt Hard" ^
